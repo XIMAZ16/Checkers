@@ -4,7 +4,7 @@ function evalState(s, b) {
   for (let i = 0; i < 64; i++) {
     const v = B[i]; if (!v) continue;
     const r = i >> 3, c = i & 7, own = ownerOf(v), sign = own === b ? 1 : -1, king = isKing(v);
-    let x = king ? 170 : 100;
+    let x = king ? 300 : 100;
     if (!king) { const adv = own === 0 ? 7 - r : r; x += adv * 4; if (adv === 0) x += 6; }
     x += (3.5 - Math.abs(c - 3.5)) * 1.5 + (3.5 - Math.abs(r - 3.5)) * (king ? 1.5 : 0.75);
     sc += sign * x;

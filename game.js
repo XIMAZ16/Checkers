@@ -1,4 +1,4 @@
-// Core Checkers (American/English 8x8) rules, state management, board rendering, and UI controller.
+// Core Checkers (8x8, flying kings) rules, state management, board rendering, and UI controller.
 // Board: Int8Array(64), index = r*8+c. 1 = X man, 2 = X king, -1 = O man, -2 = O king. X (player 0) starts at the bottom and moves first.
 const inb = (r, c) => r >= 0 && r < 8 && c >= 0 && c < 8;
 const ownerOf = (v) => (v > 0 ? 0 : 1);
@@ -17,15 +17,30 @@ const countPieces = (s, pi) => { let n = 0; for (let i = 0; i < 64; i++) if (s.b
 // Move = { f: fromIndex, p: [landing indices], c: [captured indices] }
 function jumpsFrom(b, f, v, r, c, caps, path, out) {
   let any = false;
+  const king = isKing(v), self = ownerOf(v);
   for (const [dr, dc] of dirsOf(v)) {
+    if (king) { // flying king: slide to the first piece, jump it, land on any empty square beyond
+      let mr = r + dr, mc = c + dc;
+      while (inb(mr, mc) && (b[mr * 8 + mc] === 0 || mr * 8 + mc === f)) { mr += dr; mc += dc; }
+      if (!inb(mr, mc)) continue;
+      const mi = mr * 8 + mc;
+      if (ownerOf(b[mi]) === self || caps.includes(mi)) continue;
+      let lr = mr + dr, lc = mc + dc;
+      while (inb(lr, lc) && (b[lr * 8 + lc] === 0 || lr * 8 + lc === f)) {
+        any = true;
+        jumpsFrom(b, f, v, lr, lc, caps.concat(mi), path.concat(lr * 8 + lc), out);
+        lr += dr; lc += dc;
+      }
+      continue;
+    }
     const lr = r + 2 * dr, lc = c + 2 * dc;
     if (!inb(lr, lc)) continue;
     const mi = (r + dr) * 8 + (c + dc), li = lr * 8 + lc, mv = b[mi];
-    if (mv === 0 || ownerOf(mv) === ownerOf(v) || caps.includes(mi)) continue;
+    if (mv === 0 || ownerOf(mv) === self || caps.includes(mi)) continue;
     if (b[li] !== 0 && li !== f) continue;
     any = true;
     const nc = caps.concat(mi), np = path.concat(li);
-    if (!isKing(v) && lr === kingRow(v)) out.push({ f, p: np, c: nc }); // man crowned mid-jump: turn ends
+    if (lr === kingRow(v)) out.push({ f, p: np, c: nc }); // man crowned mid-jump: turn ends
     else jumpsFrom(b, f, v, lr, lc, nc, np, out);
   }
   if (!any && caps.length) out.push({ f, p: path, c: caps });
@@ -36,7 +51,7 @@ function legalMoves(s) {
     const v = b[i]; if (!v || ownerOf(v) !== s.turn) continue;
     const r = i >> 3, c = i & 7;
     jumpsFrom(b, i, v, r, c, [], [], jumps);
-    if (!jumps.length) for (const [dr, dc] of dirsOf(v)) { const nr = r + dr, nc = c + dc; if (inb(nr, nc) && !b[nr * 8 + nc]) steps.push({ f: i, p: [nr * 8 + nc], c: [] }); }
+    if (!jumps.length) for (const [dr, dc] of dirsOf(v)) { let nr = r + dr, nc = c + dc; while (inb(nr, nc) && !b[nr * 8 + nc]) { steps.push({ f: i, p: [nr * 8 + nc], c: [] }); if (!isKing(v)) break; nr += dr; nc += dc; } }
   }
   return jumps.length ? jumps : steps; // capturing is mandatory
 }
