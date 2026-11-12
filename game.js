@@ -8,7 +8,7 @@ const dirsOf = (v) => (isKing(v) ? [[-1, -1], [-1, 1], [1, -1], [1, 1]] : v > 0 
 
 function newState() {
   const b = new Int8Array(64);
-  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if ((r + c) % 2 === 1) { if (r < 3) b[r * 8 + c] = -1; else if (r > 4) b[r * 8 + c] = 1; }
+  for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) if ((r + c) % 2 === 1) { if (r < 2) b[r * 8 + c] = -1; else if (r > 5) b[r * 8 + c] = 1; }
   return { b, turn: 0, np: 0 };
 }
 const cloneState = (s) => ({ b: s.b.slice(), turn: s.turn, np: s.np });
