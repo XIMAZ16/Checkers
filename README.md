@@ -1,1 +1,20 @@
-# Checkers
+# CHECKERS — Retro Arcade
+
+หมากฮอสอเมริกัน/อังกฤษ 8×8 ธีม Retro Arcade โครงสร้างไฟล์เหมือนเกม XO / Quoridor เดิม
+
+```text
+checkers/
+├── index.html      # โครงหน้าเว็บ, scoreboard, lobby, dialogs
+├── style.css       # ธีม Retro Arcade (ใช้ธีมเดียวกับเกมเดิม)
+├── game.js         # กติกา, state, UI controller, ระบบห้องออนไลน์
+├── ai.js           # บอท 3 ระดับ (minimax + alpha-beta)
+├── audio.js        # เสียง 8-bit
+├── net.js          # PubNub / BroadcastChannel
+└── net-config.js   # PubNub publish/subscribe keys ฝั่ง client
+```
+
+รัน: วางทุกไฟล์ในโฟลเดอร์เดียวกัน แล้วเปิดผ่าน web server (เช่น `python -m http.server 8000`) หรือดีพลอยบน Vercel
+
+กติกา: เดินเฉียงหน้า, บังคับกิน, กินต่อเนื่อง, ถึงแถวสุดท้ายเป็นฮอส (เดิน/กินได้ทั้งหน้าหลังทีละ 1 ช่อง), เสมอเมื่อ 80 ตานับจากการกิน/เดินหมากธรรมดาครั้งล่าสุด
+
+ออนไลน์: เจ้าของห้องเป็น X (ตัดสินกติกา) ผู้เข้าร่วมเป็น O ส่ง/รับผ่านช่อง `checkers-arcade-<รหัสห้อง>` ถ้าไม่ใส่คีย์ใน `net-config.js` จะเล่นได้เฉพาะแท็บในเบราว์เซอร์เดียวกัน
